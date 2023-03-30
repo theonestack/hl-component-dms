@@ -1,0 +1,67 @@
+test_metadata:
+  type: config
+  name: tasks
+  description: set tasks on the dms instance
+
+test_parameters:
+  PostgresSecretManagerArn: arn:aws:secretsmanager:ap-southeast-2:000000000000:secret:SecretName-123456
+  AuroraHost: my-aurora-db.cluster-ro-abc123.ap-southeast-2.rds.amazonaws.com
+
+tags:
+  Project: DMS
+
+endpoints:
+  s3bucket:
+    engine: s3
+    type: destination
+    bucket: my-s3-bucket
+  postgres:
+    engine: aurora-postgresql
+    type: source
+    database_name:
+      Ref: AuroraHost
+    secret: 
+      Ref: PostgresSecretManagerArn
+
+tasks:
+  AuroraToS3Replication:
+    type: full-load-and-cdc
+    source: postgres
+    target: s3bucket
+    table_mappings:
+      rules:
+        - rule-type: selection 
+          rule-id: 1
+          rule-name: 1 
+          object-locator:  
+            schema-name: dms_sample 
+            table-name: test
+          rule-action: include 
+        - rule-type: selection 
+          rule-id: 2
+          rule-name: 2 
+          object-locator:  
+            schema-name: dms_sample 
+            table-name: test
+          lob-settings:
+            mode: limited
+            bulk-max-size: 16
+    settings:
+      ErrorBehavior: 
+        TableErrorEscalationPolicy: STOP_TASK
+        RecoverableErrorThrottlingMax: 1800
+        ApplyErrorDeletePolicy: IGNORE_RECORD
+        ApplyErrorEscalationPolicy: LOG_ERROR
+        ApplyErrorUpdatePolicy: LOG_ERROR
+        DataTruncationErrorPolicy: LOG_ERROR
+        RecoverableErrorInterval: 5
+        RecoverableErrorCount: -1
+        FullLoadIgnoreConflicts: true
+        DataErrorEscalationPolicy: SUSPEND_TABLE
+        ApplyErrorInsertPolicy: LOG_ERROR
+        ApplyErrorEscalationCount: 0
+        RecoverableErrorThrottling: true
+        TableErrorEscalationCount: 0
+        TableErrorPolicy: SUSPEND_TABLE
+        DataErrorEscalationCount: 0
+        DataErrorPolicy: LOG_ERROR
