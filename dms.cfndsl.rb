@@ -96,7 +96,7 @@ CloudFormation do
       EngineName endpoint['engine']
 
       case endpoint['engine']
-      when 'aurora-postgresql', 'postgresql'
+      when 'aurora-postgresql', 'postgres'
         settings[:SecretsManagerAccessRoleArn] = FnGetAtt(:"#{safe_resource_name}EndpointRole", :Arn)
         settings[:SecretsManagerSecretId] = endpoint['secret']
         PostgreSqlSettings settings

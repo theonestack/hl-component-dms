@@ -4,8 +4,10 @@ test_metadata:
   description: set tasks on the dms instance
 
 test_parameters:
+  AuroraPostgresSecretManagerArn: arn:aws:secretsmanager:ap-southeast-2:000000000000:secret:SecretName-123456
   PostgresSecretManagerArn: arn:aws:secretsmanager:ap-southeast-2:000000000000:secret:SecretName-123456
   AuroraHost: my-aurora-db.cluster-ro-abc123.ap-southeast-2.rds.amazonaws.com
+  PostgresHost: my-postgres-db.abc123.ap-southeast-2.rds.amazonaws.com
 
 tags:
   Project: DMS
@@ -15,13 +17,21 @@ endpoints:
     engine: s3
     type: destination
     bucket: my-s3-bucket
-  postgres:
+  aurora-postgres:
     engine: aurora-postgresql
     type: source
     database_name:
       Ref: AuroraHost
     secret: 
+      Ref: AuroraPostgresSecretManagerArn
+  postgres:
+    engine: postgres
+    type: source
+    database_name:
+      Ref: PostgresHost
+    secret: 
       Ref: PostgresSecretManagerArn
+
 
 tasks:
   AuroraToS3Replication:
