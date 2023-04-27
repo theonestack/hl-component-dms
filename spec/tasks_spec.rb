@@ -155,6 +155,56 @@ describe 'compiled component dms' do
       
     end
     
+    context "aurorapostgresEndpointRole" do
+      let(:resource) { template["Resources"]["aurorapostgresEndpointRole"] }
+
+      it "is of type AWS::IAM::Role" do
+          expect(resource["Type"]).to eq("AWS::IAM::Role")
+      end
+      
+      it "to have property AssumeRolePolicyDocument" do
+          expect(resource["Properties"]["AssumeRolePolicyDocument"]).to eq({"Version"=>"2012-10-17", "Statement"=>[{"Effect"=>"Allow", "Principal"=>{"Service"=>{"Fn::Sub"=>"dms.${AWS::Region}.amazonaws.com"}}, "Action"=>"sts:AssumeRole"}]})
+      end
+      
+      it "to have property Policies" do
+          expect(resource["Properties"]["Policies"]).to eq([{"PolicyName"=>"get-database-secret", "PolicyDocument"=>{"Statement"=>[{"Sid"=>"getdatabasesecret", "Action"=>["secretsmanager:GetSecretValue"], "Resource"=>[{"Ref"=>"AuroraPostgresSecretManagerArn"}], "Effect"=>"Allow"}]}}])
+      end
+      
+      it "to have property Tags" do
+          expect(resource["Properties"]["Tags"]).to eq([{"Key"=>"Environment", "Value"=>{"Ref"=>"EnvironmentName"}}, {"Key"=>"EnvironmentType", "Value"=>{"Ref"=>"EnvironmentType"}}, {"Key"=>{"Fn::Sub"=>"Project"}, "Value"=>{"Fn::Sub"=>"DMS"}}])
+      end
+      
+    end
+    
+    context "aurorapostgres" do
+      let(:resource) { template["Resources"]["aurorapostgres"] }
+
+      it "is of type AWS::DMS::Endpoint" do
+          expect(resource["Type"]).to eq("AWS::DMS::Endpoint")
+      end
+      
+      it "to have property EndpointType" do
+          expect(resource["Properties"]["EndpointType"]).to eq("source")
+      end
+      
+      it "to have property EngineName" do
+          expect(resource["Properties"]["EngineName"]).to eq("aurora-postgresql")
+      end
+      
+      it "to have property PostgreSqlSettings" do
+          expect(resource["Properties"]["PostgreSqlSettings"]).to eq({"SecretsManagerAccessRoleArn"=>{"Fn::GetAtt"=>["aurorapostgresEndpointRole", "Arn"]}, "SecretsManagerSecretId"=>{"Ref"=>"AuroraPostgresSecretManagerArn"}})
+      end
+      
+      it "to have property DatabaseName" do
+          expect(resource["Properties"]["DatabaseName"]).to eq({"Ref"=>"AuroraHost"})
+      end
+      
+      it "to have property Tags" do
+          expect(resource["Properties"]["Tags"]).to eq([{"Key"=>"Environment", "Value"=>{"Ref"=>"EnvironmentName"}}, {"Key"=>"EnvironmentType", "Value"=>{"Ref"=>"EnvironmentType"}}, {"Key"=>{"Fn::Sub"=>"Project"}, "Value"=>{"Fn::Sub"=>"DMS"}}])
+      end
+      
+    end
+    
     context "postgresEndpointRole" do
       let(:resource) { template["Resources"]["postgresEndpointRole"] }
 
@@ -188,7 +238,7 @@ describe 'compiled component dms' do
       end
       
       it "to have property EngineName" do
-          expect(resource["Properties"]["EngineName"]).to eq("aurora-postgresql")
+          expect(resource["Properties"]["EngineName"]).to eq("postgres")
       end
       
       it "to have property PostgreSqlSettings" do
@@ -196,7 +246,7 @@ describe 'compiled component dms' do
       end
       
       it "to have property DatabaseName" do
-          expect(resource["Properties"]["DatabaseName"]).to eq({"Ref"=>"AuroraHost"})
+          expect(resource["Properties"]["DatabaseName"]).to eq({"Ref"=>"PostgresHost"})
       end
       
       it "to have property Tags" do
