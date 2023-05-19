@@ -1,0 +1,121 @@
+test_metadata:
+  type: config
+  name: endpoints
+  description: test azuredb, oracle & redshift endpoint types
+
+test_parameters:
+  AzureDBSecretManagerArn: arn:aws:secretsmanager:ap-southeast-2:000000000000:secret:SecretName-123456
+  OracleSecretManagerArn: arn:aws:secretsmanager:ap-southeast-2:000000000000:secret:SecretName-123456
+  RedshiftecretManagerArn: arn:aws:secretsmanager:ap-southeast-2:000000000000:secret:SecretName-123456
+  AzureDBHost: my-azure-db.cluster-ro-abc123.ap-southeast-2.rds.amazonaws.com
+  OracleHost: my-oracle-db.abc123.ap-southeast-2.rds.amazonaws.com
+  RedshiftHost: my-redshift.abc123.ap-southeast-2.rds.amazonaws.com
+  
+tags:
+  Project: DMStest
+
+endpoints:
+  s3bucket:
+    engine: s3
+    type: destination
+    bucket: my-s3-bucket
+  redshift:
+    engine: redshift
+    type: target
+    database_name: 
+      Ref: RedshiftHost
+    secret: 
+      Ref: RedshiftecretManagerArn
+  oracle:
+    engine: oracle
+    type: source
+    database_name:
+      Ref: OracleHost
+    secret:
+      Ref: OracleSecretManagerArn
+  azuredb:
+    engine: azuredb
+    type: source
+    database_name: 
+      Ref: AzureDBHost
+    secret:
+      Ref: AzureDBSecretManagerArn
+
+tasks:
+  OracleTask:
+    type: full-load-and-cdc
+    source: oracle
+    target: s3bucket
+    table_mappings:
+      rules:
+        - rule-type: selection 
+          rule-id: 1
+          rule-name: 1 
+          object-locator:  
+            schema-name: dms_test_sample 
+            table-name: some
+          rule-action: include 
+        - rule-type: selection 
+          rule-id: 2
+          rule-name: 2 
+          object-locator:  
+            schema-name: dms_test_sample 
+            table-name: some
+          lob-settings:
+            mode: limited
+            bulk-max-size: 16
+    settings:
+      ErrorBehavior: 
+        TableErrorEscalationPolicy: STOP_TASK
+        RecoverableErrorThrottlingMax: 1800
+        ApplyErrorDeletePolicy: IGNORE_RECORD
+        ApplyErrorEscalationPolicy: LOG_ERROR
+        ApplyErrorUpdatePolicy: LOG_ERROR
+        DataTruncationErrorPolicy: LOG_ERROR
+        RecoverableErrorInterval: 5
+        RecoverableErrorCount: -1
+        FullLoadIgnoreConflicts: true
+        DataErrorEscalationPolicy: SUSPEND_TABLE
+        ApplyErrorInsertPolicy: LOG_ERROR
+        ApplyErrorEscalationCount: 0
+        RecoverableErrorThrottling: true
+        TableErrorEscalationCount: 0
+        TableErrorPolicy: SUSPEND_TABLE
+        DataErrorEscalationCount: 0
+        DataErrorPolicy: LOG_ERROR
+
+  AzureToRedshift:
+    type: full-load-and-cdc
+    source: azuredb
+    target: redshift
+    table_mappings:
+      rules:
+        - rule-type: selection 
+          rule-id: 1
+          rule-name: 1 
+          object-locator:  
+            schema-name: test321 
+            table-name: test123
+          rule-action: include 
+          lob-settings:
+            mode: limited
+            bulk-max-size: 12
+    settings:
+      ErrorBehavior: 
+        TableErrorEscalationPolicy: STOP_TASK
+        RecoverableErrorThrottlingMax: 1800
+        ApplyErrorDeletePolicy: IGNORE_RECORD
+        ApplyErrorEscalationPolicy: LOG_ERROR
+        ApplyErrorUpdatePolicy: LOG_ERROR
+        DataTruncationErrorPolicy: LOG_ERROR
+        RecoverableErrorInterval: 5
+        RecoverableErrorCount: -1
+        FullLoadIgnoreConflicts: true
+        DataErrorEscalationPolicy: SUSPEND_TABLE
+        ApplyErrorInsertPolicy: LOG_ERROR
+        ApplyErrorEscalationCount: 0
+        RecoverableErrorThrottling: true
+        TableErrorEscalationCount: 0
+        TableErrorPolicy: SUSPEND_TABLE
+        DataErrorEscalationCount: 0
+        DataErrorPolicy: LOG_ERROR
