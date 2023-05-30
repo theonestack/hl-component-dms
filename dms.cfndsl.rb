@@ -39,7 +39,7 @@ CloudFormation do
     policy = {}
 
     case endpoint['engine']
-    when 'aurora-postgresql', 'postgres', 'redshift', 'azuredb', 'oracle'
+    when 'aurora-postgresql', 'postgres', 'redshift', 'azuredb', 'sqlserver', 'oracle'
       policy["get-database-secret"] = {
         "action" => [
           "secretsmanager:GetSecretValue"
@@ -108,7 +108,7 @@ CloudFormation do
         settings[:SecretsManagerAccessRoleArn] = FnGetAtt(:"#{safe_resource_name}EndpointRole", :Arn)
         settings[:SecretsManagerSecretId] = endpoint['secret']
         OracleSettings settings
-      when 'azuredb'
+      when 'azuredb', 'sqlserver'
         settings[:SecretsManagerAccessRoleArn] = FnGetAtt(:"#{safe_resource_name}EndpointRole", :Arn)
         settings[:SecretsManagerSecretId] = endpoint['secret']
         MicrosoftSqlServerSettings settings
