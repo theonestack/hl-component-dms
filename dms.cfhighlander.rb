@@ -3,6 +3,7 @@ CfhighlanderTemplate do
   Description "dms - #{component_version}"
 
   DependsOn 'lib-iam@0.2.0'
+  DependsOn 'lib-ec2'
 
   Parameters do
     ComponentParam 'EnvironmentName', 'dev', isGlobal: true

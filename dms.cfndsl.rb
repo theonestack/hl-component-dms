@@ -12,9 +12,12 @@ CloudFormation do
     Tags dms_tags
   }
 
+  security_group_rules = external_parameters.fetch(:security_group_rules, [])
+  ip_blocks = external_parameters.fetch(:ip_blocks, [])
   EC2_SecurityGroup(:SecurityGroup) {
     GroupDescription FnSub("${EnvironmentName} DMS tasks")
     VpcId Ref(:VpcId)
+    SecurityGroupIngress generate_security_group_rules(security_group_rules,ip_blocks) if (!security_group_rules.empty? && !ip_blocks.empty?)
     Tags dms_tags
   }
 
