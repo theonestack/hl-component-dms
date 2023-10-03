@@ -12,6 +12,12 @@ CloudFormation do
     Tags dms_tags
   }
 
+  EC2_SecurityGroup(:SecurityGroup) {
+    GroupDescription FnSub("${EnvironmentName} DMS tasks")
+    VpcId Ref(:VpcId)
+    Tags dms_tags
+  }
+
   ingress_rules = external_parameters.fetch(:ingress_rules, [])
   ingress_rules.each_with_index do |ingress_rule, i|
     EC2_SecurityGroupIngress("IngressRule#{i+1}") do
