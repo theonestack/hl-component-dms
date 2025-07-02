@@ -143,6 +143,10 @@ CloudFormation do
         DatabaseName endpoint['database_name']
       end
 
+      if endpoint.has_key?('extra_connection_attributes')
+        ExtraConnectionAttributes endpoint['extra_connection_attributes']
+      end
+
       Tags dms_tags
     }
   end
