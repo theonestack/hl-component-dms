@@ -5,6 +5,8 @@ CloudFormation do
   dms_tags.push({ Key: 'Environment', Value: Ref(:EnvironmentName) })
   dms_tags.push({ Key: 'EnvironmentType', Value: Ref(:EnvironmentType) })
   dms_tags.push(*tags.map {|k,v| {Key: FnSub(k), Value: FnSub(v)}})
+
+  Condition(:SetReplicationInstanceAllocatedStorage, FnNot(FnEquals(Ref(:ReplicationInstanceAllocatedStorage), '')))
   
   IAM_Role(:Role) {
     AssumeRolePolicyDocument service_assume_role_policy('dms')
@@ -44,6 +46,7 @@ CloudFormation do
     MultiAZ Ref(:MultiAz)
     PubliclyAccessible false
     ReplicationInstanceClass Ref(:ReplicationInstanceClass)
+    AllocatedStorage FnIf(:SetReplicationInstanceAllocatedStorage, Ref(:ReplicationInstanceAllocatedStorage), Ref('AWS::NoValue'))
     ReplicationSubnetGroupIdentifier Ref(:ReplicationSubnetGroup)
     VpcSecurityGroupIds [Ref(:SecurityGroup)]
     Tags dms_tags
@@ -138,6 +141,10 @@ CloudFormation do
 
       if endpoint.has_key?('database_name')
         DatabaseName endpoint['database_name']
+      end
+
+      if endpoint.has_key?('extra_connection_attributes')
+        ExtraConnectionAttributes endpoint['extra_connection_attributes']
       end
 
       Tags dms_tags

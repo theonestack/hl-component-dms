@@ -13,6 +13,7 @@ CfhighlanderTemplate do
     ComponentParam 'SubnetIds', type: 'CommaDelimitedList'
     ComponentParam 'MultiAz', 'false', allowedValues: ['true', 'false']
     ComponentParam 'ReplicationInstanceClass', 'dms.t3.small'
+    ComponentParam 'ReplicationInstanceAllocatedStorage', '' # size in GB
   end
 
 end

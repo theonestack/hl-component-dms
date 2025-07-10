@@ -95,6 +95,10 @@ describe 'compiled component dms' do
           expect(resource["Properties"]["ReplicationInstanceClass"]).to eq({"Ref"=>"ReplicationInstanceClass"})
       end
       
+      it "to have property AllocatedStorage" do
+          expect(resource["Properties"]["AllocatedStorage"]).to eq({"Fn::If"=>["SetReplicationInstanceAllocatedStorage", {"Ref"=>"ReplicationInstanceAllocatedStorage"}, {"Ref"=>"AWS::NoValue"}]})
+      end
+      
       it "to have property ReplicationSubnetGroupIdentifier" do
           expect(resource["Properties"]["ReplicationSubnetGroupIdentifier"]).to eq({"Ref"=>"ReplicationSubnetGroup"})
       end
